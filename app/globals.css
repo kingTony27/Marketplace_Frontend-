@@ -1,26 +1,106 @@
 @import "tailwindcss";
 
+/*
+ * Theme tokens for the shadcn (base-nova) components. Without these the
+ * bg-popover / bg-foreground / bg-sidebar style utilities resolve to nothing
+ * and overlays (mobile sheet, tooltips) render transparent.
+ */
+
+ body {
+  position: relative;
+}
+
+
+.lo-spinner::after {
+  inset: 22%;
+  border-bottom-color: #4ade80;
+  border-left-color: #4ade80;
+  animation: lo-spin 0.7s linear infinite reverse;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-main: #18181b;
+  --bg-card: #27272a;
+  --text-main: #ffffff;
+  --text-accent: #05df72;
+  --text-muted: #a1a1aa;
+
+  --background: #18181b;
+  --foreground: #ffffff;
+  --card: #27272a;
+  --card-foreground: #ffffff;
+  --popover: #18181b;
+  --popover-foreground: #ffffff;
+  --primary: #05df72;
+  --primary-foreground: #18181b;
+  --secondary: #27272a;
+  --secondary-foreground: #ffffff;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #05df72;
+  --accent-foreground: #18181b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #3f3f46;
+  --input: #3f3f46;
+  --ring: #05df72;
+  --radius: 0.5rem;
+
+  --sidebar: #18181b;
+  --sidebar-foreground: #ffffff;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #05df72;
+  --sidebar-primary: #05df72;
+  --sidebar-primary-foreground: #18181b;
+  --sidebar-border: #3f3f46;
+  --sidebar-ring: #05df72;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-sancreek: "Sancreek", cursive;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Sancreek", cursive;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* Sidebar expand/collapse: one slower, springier easing for the rail and the
+   page content so they move together instead of the stock 200ms linear. */
+[data-slot="sidebar-gap"],
+[data-slot="sidebar-container"] {
+  transition-duration: 350ms;
+  transition-timing-function: cubic-bezier(0.65, 0.05, 0.36, 1);
 }
