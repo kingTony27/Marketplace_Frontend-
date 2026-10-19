@@ -33,7 +33,7 @@ export default function LoadingOverlay({ show = true, src, size = 64 }: LoadingO
       role="status"
       aria-live="polite"
       aria-label="Loading"
-      style={{ "--lo-size": `${size}px` }}
+      style={{ "--lo-size": `${size}px` } as React.CSSProperties}
     >
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
