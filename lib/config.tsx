@@ -24,12 +24,12 @@ const connectors = connectorsForWallets(
 
 export const config = createConfig({
   connectors,
-  chains: [hardhat, sepolia, mainnet],
+  chains: [sepolia,], //add mainnet if you wish to deploy to mainnet
   ssr: true,
   storage: createStorage({ storage: cookieStorage }),
   transports: {
-    [hardhat.id]: http('http://127.0.0.1:8545'),
-    [mainnet.id]: http(process.env.NEXT_PUBLIC_MAINNET_RPC_URL),
     [sepolia.id]: http(process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL),
+    // [hardhat.id]: http('http://127.0.0.1:8545'),
+    // [mainnet.id]: http(process.env.NEXT_PUBLIC_MAINNET_RPC_URL),
   },
 })

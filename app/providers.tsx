@@ -5,7 +5,7 @@ import { WagmiProvider, type State } from 'wagmi'
 import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { AuthProvider } from "@/lib/authProvider"
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { hardhat } from "wagmi/chains";
+import { hardhat, sepolia } from "wagmi/chains";
 import { config } from '../lib/config' // wherever your config lives
 
 import { useState } from 'react' 
@@ -33,7 +33,7 @@ export function Providers({ children, initialState }: { children: React.ReactNod
               borderRadius: 'medium',
             })}
             modalSize="compact"
-            initialChain={hardhat} // default to hardhat; switch to sepolia for prod
+            initialChain={sepolia} // default to hardhat; switch to sepolia for prod
           >
             {children}
           </RainbowKitProvider>
