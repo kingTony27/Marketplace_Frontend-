@@ -1,14 +1,44 @@
 'use client'
 
 import "@rainbow-me/rainbowkit/styles.css";
-import { WagmiProvider, type State } from 'wagmi'
+import { WagmiProvider, useAccount, type State } from 'wagmi'
 import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { AuthProvider } from "@/lib/authProvider"
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { hardhat, sepolia } from "wagmi/chains";
 import { config } from '../lib/config' // wherever your config lives
 
-import { useState } from 'react' 
+import { useEffect, useRef, useState } from 'react' 
+
+/**
+ * Wipes client storage when the wallet disconnects and reloads the page, so a
+ * draft saved by the previous user is never shown to the next one on a shared
+ * browser. "reconnecting" is ignored so a refresh doesn't trigger a false reset.
+ */
+function ResetStorageOnDisconnect() {
+  const { status } = useAccount();
+  const wasConnected = useRef(false);
+
+  useEffect(() => {
+    if (status === 'connected') {
+      wasConnected.current = true;
+      return;
+    }
+    // Ignore transient states and the initial "never connected" load.
+    if (status === 'connecting' || status === 'reconnecting') return;
+    if (status !== 'disconnected' || !wasConnected.current) return;
+
+    wasConnected.current = false;
+    try {
+      localStorage.clear();
+    } catch {
+      /* storage unavailable */
+    }
+    window.location.reload();
+  }, [status]);
+
+  return null;
+}
 
 export function Providers({ children, initialState }: { children: React.ReactNode, initialState?: State }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -24,6 +54,7 @@ export function Providers({ children, initialState }: { children: React.ReactNod
 
   return (
     <WagmiProvider config={config} initialState={initialState}>
+      <ResetStorageOnDisconnect />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <RainbowKitProvider
