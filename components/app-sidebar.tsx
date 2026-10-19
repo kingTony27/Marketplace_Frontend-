@@ -223,7 +223,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           onClick={() => handleActivate("Home")}
           className="w-full px-1 text-left text-2xl tracking-tight whitespace-nowrap text-green-400 group-data-[collapsible=icon]:text-center transition-colors duration-200 hover:text-green-400/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 rounded-lg"
         >
-          Zora
+          NFT's
         </a>
       </SidebarFooter>
     </Sidebar>
