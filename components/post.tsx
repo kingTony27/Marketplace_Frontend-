@@ -21,8 +21,7 @@ export interface PostData {
 }
 
 interface FeaturedOption {
-  days: number;
-  feePercent: number;
+  days: number
 }
 
 // The on-chain Marketplace.listItem(uint256,uint256,address,bool) contract
@@ -31,7 +30,7 @@ interface FeaturedOption {
 // (owner-only). We surface the contract's currently-configured featured tier
 // here so the dropdown never offers tiers the contract cannot honour.
 const FEATURED_OPTIONS: FeaturedOption[] = [
-  { days: 30, feePercent: 15 },
+  { days: 30 },
 ];
 
 // Hardhat/Foundry artifacts keep the ABI under `.abi`; a bare ABI file is the array itself.
@@ -581,7 +580,7 @@ export default function PostSidebar({
         <form onSubmit={handlePost} className="flex flex-1 flex-col gap-5 p-4 sm:p-6" noValidate>
           <div className="flex items-center justify-between">
             <h2 id={titleId} className="text-2xl text-green-400 sm:text-3xl sancreek">
-              New Post
+              New Nft
             </h2>
             <span
               role="status"
@@ -700,7 +699,7 @@ export default function PostSidebar({
               value={writeUp}
               onChange={(e) => setWriteUp(limitWords(e.target.value))}
               placeholder={`Short description (max ${MAX_WORDS} words)`}
-              maxLength={120}
+              maxLength={15}
               autoComplete="off"
               disabled={locked}
               className={inputClass}
@@ -773,14 +772,13 @@ export default function PostSidebar({
                 >
                   {FEATURED_OPTIONS.map((o) => (
                     <option key={o.days} value={o.days}>
-                      {o.days} days ({o.feePercent}% fee)
+                      {o.days} days
                     </option>
                   ))}
                 </select>
                 {selectedOption && (
                   <p className="mt-2 text-xs text-zinc-500">
-                    A {selectedOption.feePercent}% fee applies for {selectedOption.days} days
-                    of featuring.
+                    Your NFT will stay in the featured section for {selectedOption.days} days
                   </p>
                 )}
               </div>
