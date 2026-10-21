@@ -384,6 +384,21 @@ export default function PostSidebar({
     const uploaded = await createMetadata(body);
     if (!uploaded.ok) throw new Error(uploaded.error);
 
+  //debug
+    console.log("mint check", { NFT_ADDRESS, uri: uploaded.metadataUri, account: address });
+try {
+  await publicClient.simulateContract({
+    address: NFT_ADDRESS,
+    abi: NFT_ABI,
+    functionName: "createNFT",
+    args: [uploaded.metadataUri],
+    account: address,
+  });
+} catch (e: any) {
+  console.error("createNFT would revert:", e.shortMessage ?? e.message, e.cause);
+  throw e;
+}
+
     // 2. Mint
     setStatus("Confirm the mint in your wallet...");
     const hash = await writeContractAsync({
@@ -446,21 +461,6 @@ export default function PostSidebar({
       if (approval.status !== "success") throw new Error("Approval transaction failed.");
     }
 
-    //debug
-    console.log("addresses", { MARKET_ADDRESS, NFT_ADDRESS, id: id.toString(), featured, priceWei: priceWei.toString() });
-      try {
-        await publicClient.simulateContract({
-          address: MARKET_ADDRESS,
-          abi: MARKET_ABI,
-          functionName: "listItem",
-          args: [id, priceWei, PAYMENT_TOKEN, featured],
-          account: address,
-        });
-      } catch (e: any) {
-        console.error("listItem would revert:", e.shortMessage ?? e.message, e.cause);
-        throw e;
-      }
-      
     setStatus("Confirm the listing in your wallet...");
     const listHash = await writeContractAsync({
       address: MARKET_ADDRESS,
