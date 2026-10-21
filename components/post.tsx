@@ -38,6 +38,7 @@ const NFT_ABI = ((NFTArtifact as any).abi ?? NFTArtifact) as Abi;
 const MARKET_ABI = ((MarketplaceArtifact as any).abi ?? MarketplaceArtifact) as Abi;
 const NFT_ADDRESS = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS as `0x${string}`;
 const MARKET_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_ADDRESS as `0x${string}`;
+console.log(NFT_ADDRESS) //check
 
 // address(0) = the chain's native coin. Swap for an accepted ERC-20 address if you add token payments.
 const PAYMENT_TOKEN = zeroAddress;
