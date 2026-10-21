@@ -38,7 +38,6 @@ const NFT_ABI = ((NFTArtifact as any).abi ?? NFTArtifact) as Abi;
 const MARKET_ABI = ((MarketplaceArtifact as any).abi ?? MarketplaceArtifact) as Abi;
 const NFT_ADDRESS = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS as `0x${string}`;
 const MARKET_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_ADDRESS as `0x${string}`;
-console.log(NFT_ADDRESS) //check
 
 // address(0) = the chain's native coin. Swap for an accepted ERC-20 address if you add token payments.
 const PAYMENT_TOKEN = zeroAddress;
@@ -385,20 +384,6 @@ export default function PostSidebar({
     const uploaded = await createMetadata(body);
     if (!uploaded.ok) throw new Error(uploaded.error);
 
-  //debug
-    console.log("mint check", { NFT_ADDRESS, uri: uploaded.metadataUri, account: address });
-try {
-  await publicClient.simulateContract({
-    address: NFT_ADDRESS,
-    abi: NFT_ABI,
-    functionName: "createNFT",
-    args: [uploaded.metadataUri],
-    account: address,
-  });
-} catch (e: any) {
-  console.error("createNFT would revert:", e.shortMessage ?? e.message, e.cause);
-  throw e;
-}
 
     // 2. Mint
     setStatus("Confirm the mint in your wallet...");
@@ -715,7 +700,7 @@ try {
               value={writeUp}
               onChange={(e) => setWriteUp(limitWords(e.target.value))}
               placeholder={`Short description (max ${MAX_WORDS} words)`}
-              maxLength={15}
+              maxLength={30}
               autoComplete="off"
               disabled={locked}
               className={inputClass}
