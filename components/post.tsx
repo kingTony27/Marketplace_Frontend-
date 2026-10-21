@@ -446,6 +446,21 @@ export default function PostSidebar({
       if (approval.status !== "success") throw new Error("Approval transaction failed.");
     }
 
+    //debug
+    console.log("addresses", { MARKET_ADDRESS, NFT_ADDRESS, id: id.toString(), featured, priceWei: priceWei.toString() });
+      try {
+        await publicClient.simulateContract({
+          address: MARKET_ADDRESS,
+          abi: MARKET_ABI,
+          functionName: "listItem",
+          args: [id, priceWei, PAYMENT_TOKEN, featured],
+          account: address,
+        });
+      } catch (e: any) {
+        console.error("listItem would revert:", e.shortMessage ?? e.message, e.cause);
+        throw e;
+      }
+      
     setStatus("Confirm the listing in your wallet...");
     const listHash = await writeContractAsync({
       address: MARKET_ADDRESS,
