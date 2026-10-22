@@ -218,18 +218,18 @@ function PreviewCard({
 const WALLET_PLACEHOLDER_ITEMS: PreviewCardItem[] = [
   {
     id: "wallet-1",
-    title: "Connect a wallet",
+    title: "Get Sepolia ETH",
     description:
-      "Create an EVM decentralized wallet such as MetaMask, Coinbase etc. Set up a new wallet and keep the recovery phrase safe.",
+      "Go to Google web3 faucet and fund you account you wish to use with sepolia ETH.",
     imageSrc: "/connect_step1.png",
     imageAlt: null,
     href: "#",
   },
   {
     id: "wallet-2",
-    title: "Create your account",
+    title: "Connect a wallet/create account",
     description:
-      "Sign in using wallet and create your account. After signUp fund wallet with Sepolia ETH.",
+      "Connect an existing wallet or set up a new wallet and keep the recovery phrase safe. Sign in using wallet and create your account.",
     imageSrc: "/connect_step2.png",
     imageAlt: null,
     href: "#",
@@ -276,24 +276,24 @@ const SELL_PLACEHOLDER_ITEMS: PreviewCardItem[] = [
   {
     id: "sell-1",
     title: "Create your NFT",
-    description: "Click the post icons on your sidebar menu. Make sure account is funded!.",
+    description: "Click the create button in the menu sidebar. Then fill in your NFT details and initiate the transaction.",
     imageSrc: "/create&sell_step1.png",
     imageAlt: null,
     href: "#",
   },
   {
     id: "sell-2",
-    title: "Set a price",
-    description: "Upload the picture for your NFT, fill in a price and add a phrase(something that can be easy to search).",
-    imageSrc: null,
+    title: "Warning error",
+    description: "You may get some warning errors such as the ones in the image. Don't worry it's mainly cause the site is on free deployment.",
+    imageSrc: "create&sell_step2.png",
     imageAlt: null,
     href: "#",
   },
   {
     id: "sell-3",
     title: "List it for sale",
-    description: "When done you create the NFT first then list it after. You can decide to list on Featured which costs more but displays your NFT on the featured page.",
-    imageSrc: null,
+    description: "When done with creating the NFT you then list it. You can decide to list on Featured section alone which lasts for 30 days or you can list normally.",
+    imageSrc: "create&sell_step3.png",
     imageAlt: null,
     href: "#",
   },
