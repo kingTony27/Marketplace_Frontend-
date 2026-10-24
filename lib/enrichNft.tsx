@@ -21,7 +21,7 @@ export interface ListingItem extends ApiListing {
   ratio: number; // width / height
 }
 
-const resolveIpfs = (uri: string) =>
+export const resolveIpfs = (uri: string) => // resolve ipfs uri to gateway
   uri.startsWith("ipfs://")
     ? GATEWAY + uri.slice("ipfs://".length).replace(/^ipfs\//, "")
     : uri;
@@ -34,7 +34,7 @@ const measure = (src: string) =>
     img.src = src;
   });
 
-export async function enrich(listing: ApiListing): Promise<ListingItem> {
+export async function enrich(listing: ApiListing): Promise<ListingItem> { // enrich listing with metadata
   try {
     const res = await fetch(resolveIpfs(listing.tokenUri));
     const meta = await res.json();

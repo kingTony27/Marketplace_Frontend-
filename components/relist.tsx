@@ -6,6 +6,9 @@ import { parseEther, zeroAddress, type Abi } from "viem";
 import NFTArtifact from "@/abi/NFTCollection.json";
 import MarketplaceArtifact from "@/abi/Marketplace.json";
 import { useCurrency, type Currency } from "@/lib/currencyContext";
+import { supabasePublic } from "@/lib/supabaseClient";
+import { resolveIpfs } from "@/lib/enrichNft";
+import { parseEventLogs } from "viem";
 
 /* ------------------------------------------------------------------ */
 /* Config                                                              */
@@ -14,7 +17,7 @@ import { useCurrency, type Currency } from "@/lib/currencyContext";
 // The on-chain Marketplace.listItem(uint256,uint256,address,bool) contract
 // takes only a `featured: bool` (4th arg). Duration/fee live at the contract
 // level (owner-only), so we surface the currently-configured tier here.
-const FEATURED_OPTIONS = [{ days: 30, feePercent: 15 }];
+const FEATURED_OPTIONS = [{ days: 30,  }];
 
 const NFT_ABI = ((NFTArtifact as any).abi ?? NFTArtifact) as Abi;
 const MARKET_ABI = ((MarketplaceArtifact as any).abi ?? MarketplaceArtifact) as Abi;
@@ -41,6 +44,50 @@ function errorMessage(err: unknown) {
   }
   const e = err as { shortMessage?: string; message?: string } | null;
   return e?.shortMessage ?? e?.message ?? "Something went wrong. Please try again.";
+}
+
+// token_id -> nfts.token_uri -> metadata JSON -> description (null if anything is missing)
+async function getDescriptionForToken(tokenId: string): Promise<string | null> {
+  try {
+    const { data } = await supabasePublic
+      .from("nfts")
+      .select("token_uri")
+      .eq("token_id", tokenId)
+      .maybeSingle();
+    const uri: string | undefined = data?.token_uri;
+    if (!uri) return null;
+
+    const res = await fetch(resolveIpfs(uri), { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+    const meta = (await res.json()) as { description?: string };
+    return meta.description?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+// Waits for the webhook to insert the listing, then sets its description
+async function saveListingDescription(listingId: string, tokenId: string) {
+  try {
+    const description = await getDescriptionForToken(tokenId);
+    if (!description) return; // metadata missing (e.g. unpinned), leave it empty
+
+    for (let i = 0; i < 20; i++) { // about 60 seconds
+      const { data, error } = await supabasePublic
+        .from("listings")
+        .update({ description })
+        .eq("listing_id", listingId)
+        .select("listing_id");
+      if (error) {
+        console.error("description update failed:", error.message);
+        return;
+      }
+      if (data && data.length > 0) return; // saved
+      await new Promise((r) => setTimeout(r, 3000)); // row not there yet
+    }
+  } catch (e) {
+    console.error("description update failed:", e);
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -211,6 +258,15 @@ export default function RelistSidebar({ tokenId, open, onClose }: RelistSidebarP
         const receipt = await publicClient.waitForTransactionReceipt({ hash: listHash });
         if (receipt.status !== "success") throw new Error("Listing transaction failed.");
 
+          try {
+          const listed = parseEventLogs({ abi: MARKET_ABI, eventName: "Listed", logs: receipt.logs });
+          const a = listed.find((l) => l.address.toLowerCase() === MARKET_ADDRESS.toLowerCase())?.args as any;
+          const listingId = a?.listingId ?? a?.[0];
+          if (listingId != null) void saveListingDescription(String(listingId), String(id));
+        } catch {
+          /* never block the listing flow */
+        }
+
         onClose();
       } catch (err) {
         setFormError(errorMessage(err));
@@ -333,14 +389,14 @@ export default function RelistSidebar({ tokenId, open, onClose }: RelistSidebarP
                 >
                   {FEATURED_OPTIONS.map((o) => (
                     <option key={o.days} value={o.days}>
-                      {o.days} days ({o.feePercent}% fee)
+                      {o.days} days
                     </option>
                   ))}
                 </select>
                 {selectedOption && (
                   <p className="mt-2 text-xs text-zinc-500">
-                    A {selectedOption.feePercent}% fee applies for {selectedOption.days} days
-                    of featuring.
+                    Your NFT stays in featured section for {selectedOption.days} days
+                    only.
                   </p>
                 )}
               </div>

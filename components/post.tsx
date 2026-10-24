@@ -7,6 +7,7 @@ import NFTArtifact from "@/abi/NFTCollection.json";
 import MarketplaceArtifact from "@/abi/Marketplace.json";
 import { createMetadata } from "@/upload/actions";
 import { useCurrency, type Currency } from "@/lib/currencyContext";
+import {supabasePublic} from "@/lib/supabaseClient";
 
 /* ------------------------------------------------------------------ */
 /* Types + config                                                      */
@@ -458,6 +459,7 @@ export default function PostSidebar({
     setStatus("Waiting for the listing to confirm...");
     const receipt = await publicClient.waitForTransactionReceipt({ hash: listHash });
     if (receipt.status !== "success") throw new Error("Listing transaction failed.");
+    return receipt;
   };
 
   /* -------------------------------------------------------------- */
@@ -484,6 +486,28 @@ export default function PostSidebar({
       setStatus(null);
     }
   };
+
+  //  waits for the webhook to insert the listing, then sets its description in the db
+async function saveListingDescription(listingId: string, description: string) {
+  if (!description) return;
+  try {
+    for (let i = 0; i < 20; i++) { // about 60 seconds
+      const { data, error } = await supabasePublic
+        .from("listings")
+        .update({ description })
+        .eq("listing_id", listingId)
+        .select("listing_id");
+      if (error) {
+        console.error("description update failed:", error.message);
+        return;
+      }
+      if (data && data.length > 0) return; // saved
+      await new Promise((r) => setTimeout(r, 3000)); // row not there yet
+    }
+  } catch (e) {
+    console.error("description update failed:", e);
+  }
+}
 
   /* -------------------------------------------------------------- */
   /* Click 2: approve (if needed) and list                           */
@@ -519,7 +543,18 @@ export default function PostSidebar({
 
     setStep("listing");
     try {
-      await approveAndList(tokenId, priceWei);
+      const description = writeUp.trim(); // capture description before resetForm clears it
+      const receipt = await approveAndList(tokenId, priceWei);
+
+      // Read the listing id from the Listed event, then save the description in the background
+      try {
+        const listed = parseEventLogs({ abi: MARKET_ABI, eventName: "Listed", logs: receipt.logs });
+        const a = listed.find((l) => l.address.toLowerCase() === MARKET_ADDRESS.toLowerCase())?.args as any;
+        const listingId = a?.listingId ?? a?.[0];
+        if (listingId != null) void saveListingDescription(String(listingId), description);
+      } catch {
+        /* never block the listing flow */
+      }
 
       // Only a fully successful listing clears the draft.
       clearDraft();

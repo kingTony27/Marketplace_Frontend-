@@ -1,6 +1,5 @@
 // app/profile/types.ts
 // Shared types for the profile page (listings + gallery).
-import type { ReactNode } from "react";
 
 export const PROFILE_PAGE_SIZE = 20;
 
