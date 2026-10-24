@@ -9,13 +9,13 @@ import {
   type KeyboardEvent,
 } from "react";
 import { X as CloseIcon } from "lucide-react";
-import { useAccount, useSignMessage } from "wagmi";
+import { useAccount,  } from "wagmi";
 import { useUsernameModal } from "@/lib/authProvider";
 import { AVATAR_OPTIONS } from "@/lib/avatarOptions";
-import { buildAvatarMessage } from "@/lib/avatarMessage";
 import RelistSidebar from "@/components/relist";
 import ProfileNftCard from "./ProfileNftCard";
 import type { ProfileNft, TabId } from "./types";
+import { supabasePublic } from "@/lib/supabaseClient";
 import { loadListings, loadGallery } from "./[wallet]/actions";
 
 
@@ -175,8 +175,6 @@ export default function ProfilePage({
     setListingTokenId(nft.tokenId);
   }, []);
 
-  // ---- Wallet signing for avatar updates ----
-  const { signMessageAsync } = useSignMessage();
 
   const avatarWrapRef = useRef<HTMLDivElement | null>(null);
   const pickerRef = useRef<HTMLDivElement | null>(null);
@@ -204,7 +202,7 @@ export default function ProfilePage({
     };
   }, [avatarPickerOpen]);
 
-  const selectAvatar = useCallback(
+   const selectAvatar = useCallback(
     async (url: string) => {
       if (savingAvatar || url === currentAvatarUrl) {
         setAvatarPickerOpen(false);
@@ -220,31 +218,23 @@ export default function ProfilePage({
 
       try {
         setSavingAvatar(true);
-        const timestamp = Date.now();
-        const message = buildAvatarMessage({ wallet, avatarUrl: url, timestamp });
-        const signature = await signMessageAsync({ message });
+        const { data, error } = await supabasePublic
+          .from("users")
+          .update({ avatar_url: url || null })
+          .eq("wallet", wallet.toLowerCase())
+          .select("wallet");
 
-        const res = await fetch(`/api/users/${wallet}/avatar`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ avatarUrl: url || null, timestamp, signature }),
-        });
-
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          throw new Error(body?.error ?? "Failed to save avatar.");
-        }
+        if (error) throw new Error(error.message);
+        // RLS doesn't raise an error when it blocks an update; it just matches 0 rows
+        if (!data?.length) throw new Error("Couldn't save your avatar.");
       } catch (err) {
-        // Roll back the optimistic change.
-        setCurrentAvatarUrl(previous);
-        setAvatarError(
-          err instanceof Error ? err.message : "Couldn't save your avatar."
-        );
+        setCurrentAvatarUrl(previous); // roll back
+        setAvatarError(err instanceof Error ? err.message : "Couldn't save your avatar.");
       } finally {
         setSavingAvatar(false);
       }
     },
-    [currentAvatarUrl, editable, savingAvatar, signMessageAsync, wallet]
+    [currentAvatarUrl, editable, savingAvatar, wallet]
   );
 
   // ---- Load more handlers ----

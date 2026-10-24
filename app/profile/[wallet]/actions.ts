@@ -13,7 +13,7 @@ const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
 type GalleryViewRow = {
   nft_id: string | number;
   token_id: string | number | null;
-  token_uri: string | null;
+  token_uri: string | null; 
   last_sale_price: string | number | null;
   last_sale_payment_token: string | null;
 };
