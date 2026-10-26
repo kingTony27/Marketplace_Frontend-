@@ -90,7 +90,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         if (!ethUsd) return "…";
         return `${(eth * ethUsd).toFixed(2)} USDC`;
       }
-      return `${eth} ETH`;
+      // Max 6 decimals, no trailing zeros (0.100000 -> 0.1)
+      return `${parseFloat(eth.toFixed(6))} ETH`;
     },
     [currency, ethUsd]
   );
